@@ -13,8 +13,8 @@ function Menu() {
   );
 }
 
-export function loader() {
-  const menu = getMenu();
+export async function loader() {
+  const menu = await getMenu();
   return menu;
 }
 
