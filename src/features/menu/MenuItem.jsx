@@ -7,15 +7,13 @@ function MenuItem({ pizza }) {
   const { id, name, unitPrice, ingredients, soldOut, imageUrl } = pizza;
   const dispatch = useDispatch();
   function handleAddItem() {
-    const newItem = [
-      {
-        pizzaId: id,
-        name,
-        quantity: 1,
-        unitPrice,
-        totalPrice: unitPrice * 1,
-      },
-    ];
+    const newItem = {
+      pizzaId: id,
+      name,
+      quantity: 1,
+      unitPrice,
+      totalPrice: unitPrice * 1,
+    };
     dispatch(addItem(newItem));
   }
 
