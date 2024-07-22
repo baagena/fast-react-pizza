@@ -25,13 +25,15 @@ const cartSlice = createSlice({
         },
         // payload: itemId
         increaseItemQuantity(state,action) {
-            item = state.cart.find(item => item.pizzaId === action.payload)
-            item.quantity++
+           let item = state.cart.find(item => item.pizzaId === action.payload)
+           item.quantity++
         },
         // payload: itemId
-        decreaseItemQuantity(state,action) {
-            item = state.cart.find(item => item.pizzaId === action.payload)
+        decreaseItemQuantity(state, action) {
+           let item = state.cart.find(item => item.pizzaId === action.payload)
             item.quantity--
+
+            if(item.quantity === 0) cartSlice.caseReducers.deleteItem(state, action)
         },
 
         clearCart(state) {
