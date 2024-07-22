@@ -7,6 +7,7 @@ import { clearCart, getCart, getTotalCartPrice } from "../cart/cartSlice";
 import store from "../../store";
 import { formatCurrency } from "../../utils/helpers";
 import { fetchAddress } from "../user/userSlice";
+import EmptyCart from "../cart/EmptyCart";
 
 // https://uibakery.io/regex-library/phone-number
 const isValidPhone = (str) =>
@@ -16,11 +17,21 @@ const isValidPhone = (str) =>
 
 function CreateOrder() {
   const [withPriority, setWithPriority] = useState(false);
-  const username = useSelector((state) => state.user.username);
+  const {
+    username,
+    status: addressStatus,
+    position,
+    address,
+    error: errorAddress,
+  } = useSelector((state) => state.user);
   const cart = useSelector(getCart);
+
+  if (cart.length === 0) return <EmptyCart />;
+
   const navigation = useNavigation();
 
   const isSubmitting = navigation.state === "submitting";
+  const isLoadingAddress = addressStatus === "loading";
 
   const totalCartPrice = useSelector(getTotalCartPrice);
   const priorityPrice = withPriority ? totalCartPrice * 0.2 : 0;
@@ -32,7 +43,6 @@ function CreateOrder() {
     <div className="px-4 py-6">
       <h2 className="mb-8 text-xl font-semibold">Ready to order? Let's go!</h2>
 
-      <button onClick={() => dispatch(fetchAddress())}>get position</button>
       <Form method="POST">
         <div className="flex flex-col mb-5 gap-2 sm:flex-row sm:items-center">
           <label className="sm:basis-40">First Name</label>
@@ -57,16 +67,38 @@ function CreateOrder() {
           </div>
         </div>
 
-        <div className="flex flex-col mb-5 gap-2 sm:flex-row sm:items-center">
+        <div className="flex flex-col mb-5 gap-2 sm:flex-row sm:items-center relative">
           <label className="sm:basis-40">Address</label>
           <div className="grow">
             <input
               type="text"
               name="address"
               required
+              disabled={isLoadingAddress}
+              defaultValue={address}
               className="input w-full"
             />
+            {addressStatus === "error" && (
+              <p className=" mt-2 text-xs rounded-md text-red-700 bg-red-100 p-2">
+                {errorAddress}
+              </p>
+            )}
           </div>
+
+          {!position.longitude && !position.latitude && (
+            <span className="absolute top-[2px] right-[2px] z-50 md:top-[6px] md:right-[7px]">
+              <Button
+                type="small"
+                onclick={(e) => {
+                  e.preventDefault();
+                  dispatch(fetchAddress());
+                }}
+                disabled={isLoadingAddress}
+              >
+                Get position
+              </Button>
+            </span>
+          )}
         </div>
 
         <div className="mb-12 flex gap-2 items-center">
@@ -85,11 +117,22 @@ function CreateOrder() {
 
         <div>
           <input type="hidden" name="cart" value={JSON.stringify(cart)} />
-          <Button disabled={isSubmitting} type="primary">
-            {isSubmitting
-              ? "Placing order..."
-              : `Order now from ${formatCurrency(totalPrice)}`}
-          </Button>
+          <input
+            type="hidden"
+            name="position"
+            value={
+              position.longitude && position.latitude
+                ? `${position.latitude}, ${position.longitude}`
+                : ""
+            }
+          />
+          {
+            <Button disabled={isSubmitting} type="primary">
+              {isSubmitting
+                ? "Placing order..."
+                : `Order now from ${formatCurrency(totalPrice)}`}
+            </Button>
+          }
         </div>
       </Form>
     </div>
