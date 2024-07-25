@@ -16,6 +16,9 @@ const isValidPhone = (str) =>
   );
 
 function CreateOrder() {
+  const cart = useSelector(getCart);
+  if (cart.length === 0) return <EmptyCart />;
+
   const [withPriority, setWithPriority] = useState(false);
   const {
     username,
@@ -24,14 +27,11 @@ function CreateOrder() {
     address,
     error: errorAddress,
   } = useSelector((state) => state.user);
-  const cart = useSelector(getCart);
-
-  if (cart.length === 0) return <EmptyCart />;
 
   const navigation = useNavigation();
 
-  const isSubmitting = navigation.state === "submitting";
   const isLoadingAddress = addressStatus === "loading";
+  const isSubmitting = navigation.state === "submitting";
 
   const totalCartPrice = useSelector(getTotalCartPrice);
   const priorityPrice = withPriority ? totalCartPrice * 0.2 : 0;
@@ -39,6 +39,7 @@ function CreateOrder() {
 
   const formErrors = useActionData();
   const dispatch = useDispatch();
+
   return (
     <div className="px-4 py-6">
       <h2 className="mb-8 text-xl font-semibold">Ready to order? Let's go!</h2>
